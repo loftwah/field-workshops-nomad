@@ -302,7 +302,81 @@ job "example" {
 
 ???
 * good time to throw in consul ;)
- 
+
+---
+class: compact, col-2
+name: Job Types and Schedulers
+# Nomad Job Types and Schedulers
+.smaller[
+- The [type stanza](https://www.nomadproject.io/docs/job-specification/job.html#type) specifies the Nomad scheduler to use. 
+ - Nomad has three scheduler types that can be used when creating your job: [service](https://www.nomadproject.io/docs/schedulers.html#service),  [batch](https://www.nomadproject.io/docs/schedulers.html#batch) and [system](https://www.nomadproject.io/docs/schedulers.html#system) schedulers.
+] 
+
+<br>
+
+```go
+job "example" {
+  datacenters = ["dc1"]
+* type = "system"
+```
+
+---
+class: compact, col-2
+name: Job Types and Schedulers
+# Service Scheduler
+.smaller[
+- The [service scheduler](https://www.nomadproject.io/docs/schedulers.html#service) is designed for scheduling long lived services that should never go down
+- Service jobs are intended to run until explicitly stopped by an operator. 
+- If a service task exits it is considered a failure and handled according to the job's restart and reschedule stanzas.
+] 
+
+
+```go
+job "example" {
+  datacenters = ["dc1"]
+* type = "service"
+  group "cache" {
+    task "redis" {
+      driver = "docker"
+      # ...
+      # ...
+```
+
+---
+class: compact, col-2
+name: Job Types and Schedulers
+# Batch Scheduler
+.smaller[
+  - [Batch jobs](https://www.nomadproject.io/docs/schedulers.html#batch) are short lived, usually finishing in a few minutes to a few days, and much less sensitive to short term performance fluctuations.
+  - Batch jobs are intended to run until they exit successfully. 
+  - Batch tasks that exit with an error are handled according to the job's restart and reschedule stanzas.
+] 
+
+
+```go
+job "example" {
+  datacenters = ["dc1"]
+* type = "batch"
+  group "cache" {
+    task "redis" {
+      driver = "docker"
+      # ...
+      # ...
+```
+
+---
+class: compact
+name: Job Types and Schedulers
+# System Scheduler
+.smaller[
+- The [system scheduler](https://www.nomadproject.io/docs/schedulers.html#system) is used to register jobs that should be run on all clients that meet the job's constraints. 
+- The system scheduler is also invoked when clients join the cluster or transition into the ready state. 
+  - This means that all registered system jobs will be re-evaluated and their tasks will be placed on the newly available nodes if the constraints are met.
+- This scheduler type is extremely useful for deploying and managing tasks that should be present on **every node** in the cluster.
+- Systems jobs are intended to run until explicitly stopped either by an operator or preemption. 
+- If a system task exits it is considered a failure and handled according to the job's restart stanza; *system jobs do not have rescheduling*.
+] 
+
 ---
 class: compact, col-2
 name: Registering Tasks as Consul Services
